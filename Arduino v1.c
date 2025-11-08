@@ -2,8 +2,8 @@
 #include <WebServer.h>
 
 // WiFi credentials
-const char* ssid = "Robotika@test";
-const char* password = "12345678";
+const char* ssid = "Your_WiFi_SSID";
+const char* password = "Your_WiFi_Password";
 
 // UART communication with STM32
 #define RXD2 16
@@ -235,90 +235,73 @@ void printStatus() {
 // ==================== WEB SERVER HANDLERS ====================
 
 void handleRoot() {
-    String html = R"(
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Robot Line Follower Control</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-            body { font-family: Arial; margin: 40px; background: #f0f0f0; }
-            .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
-            .status { background: #e8f4fd; padding: 15px; border-radius: 5px; margin: 10px 0; }
-            .control { background: #f8f8f8; padding: 15px; border-radius: 5px; margin: 10px 0; }
-            button { padding: 10px 20px; margin: 5px; font-size: 16px; cursor: pointer; }
-            .start { background: #4CAF50; color: white; border: none; }
-            .stop { background: #f44336; color: white; border: none; }
-            .manual { background: #2196F3; color: white; border: none; }
-            input[type="range"] { width: 300px; }
-        </style>
-        <script>
-            function updateStatus() {
-                fetch('/data')
-                    .then(response => response.json())
-                    .then(data => {
-                        document.getElementById('status').innerHTML = 
-                            'Distance: ' + data.distance + ' cm<br>' +
-                            'Encoder: ' + data.encoder + '<br>' +
-                            'Motor PWM: ' + data.motor_pwm + '<br>' +
-                            'Servo Angle: ' + data.servo_angle + '<br>' +
-                            'State: ' + data.state;
-                    });
-            }
-            
-            function sendManualControl() {
-                const pwm = document.getElementById('pwm').value;
-                const angle = document.getElementById('angle').value;
-                window.location.href = '/control?pwm=' + pwm + '&angle=' + angle;
-            }
-            
-            // Update status every 2 seconds
-            setInterval(updateStatus, 2000);
-            // Initial update
-            updateStatus();
-        </script>
-    </head>
-    <body>
-        <div class="container">
-            <h1>🤖 Robot Line Follower Control</h1>
-            
-            <div class="status">
-                <h3>📊 System Status</h3>
-                <div id="status">Loading...</div>
-            </div>
-            
-            <div class="control">
-                <h3>🎮 Basic Control</h3>
-                <button class="start" onclick="window.location.href='/start'">▶️ START</button>
-                <button class="stop" onclick="window.location.href='/stop'">⏹️ STOP</button>
-            </div>
-            
-            <div class="control">
-                <h3>⚙️ Manual Control</h3>
-                <label>Motor PWM (0-800): </label>
-                <input type="range" id="pwm" min="0" max="800" value="0">
-                <span id="pwmValue">0</span><br><br>
-                
-                <label>Servo Angle (0-180): </label>
-                <input type="range" id="angle" min="0" max="180" value="90">
-                <span id="angleValue">90</span><br><br>
-                
-                <button class="manual" onclick="sendManualControl()">🚀 Send Command</button>
-            </div>
-        </div>
-        
-        <script>
-            // Update slider values
-            document.getElementById('pwm').oninput = function() {
-                document.getElementById('pwmValue').innerHTML = this.value;
-            };
-            document.getElementById('angle').oninput = function() {
-                document.getElementById('angleValue').innerHTML = this.value;
-            };
-        </script>
-    </body>
-    </html>
-    )";
+    String html = "<!DOCTYPE html><html><head>";
+    html += "<title>Robot Line Follower Control</title>";
+    html += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
+    html += "<style>";
+    html += "body { font-family: Arial; margin: 40px; background: #f0f0f0; }";
+    html += ".container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }";
+    html += ".status { background: #e8f4fd; padding: 15px; border-radius: 5px; margin: 10px 0; }";
+    html += ".control { background: #f8f8f8; padding: 15px; border-radius: 5px; margin: 10px 0; }";
+    html += "button { padding: 10px 20px; margin: 5px; font-size: 16px; cursor: pointer; }";
+    html += ".start { background: #4CAF50; color: white; border: none; }";
+    html += ".stop { background: #f44336; color: white; border: none; }";
+    html += ".manual { background: #2196F3; color: white; border: none; }";
+    html += "input[type=\"range\"] { width: 300px; }";
+    html += "</style>";
+    html += "<script>";
+    html += "function updateStatus() {";
+    html += "    fetch('/data')";
+    html += "        .then(response => response.json())";
+    html += "        .then(data => {";
+    html += "            document.getElementById('status').innerHTML = ";
+    html += "                'Distance: ' + data.distance + ' cm<br>' +";
+    html += "                'Encoder: ' + data.encoder + '<br>' +";
+    html += "                'Motor PWM: ' + data.motor_pwm + '<br>' +";
+    html += "                'Servo Angle: ' + data.servo_angle + '<br>' +";
+    html += "                'State: ' + data.state;";
+    html += "        });";
+    html += "}";
+    html += "function sendManualControl() {";
+    html += "    const pwm = document.getElementById('pwm').value;";
+    html += "    const angle = document.getElementById('angle').value;";
+    html += "    window.location.href = '/control?pwm=' + pwm + '&angle=' + angle;";
+    html += "}";
+    html += "setInterval(updateStatus, 2000);";
+    html += "updateStatus();";
+    html += "</script>";
+    html += "</head><body>";
+    html += "<div class=\"container\">";
+    html += "<h1>Robot Line Follower Control</h1>";
+    html += "<div class=\"status\">";
+    html += "<h3>System Status</h3>";
+    html += "<div id=\"status\">Loading...</div>";
+    html += "</div>";
+    html += "<div class=\"control\">";
+    html += "<h3>Basic Control</h3>";
+    html += "<button class=\"start\" onclick=\"window.location.href='/start'\">START</button>";
+    html += "<button class=\"stop\" onclick=\"window.location.href='/stop'\">STOP</button>";
+    html += "</div>";
+    html += "<div class=\"control\">";
+    html += "<h3>Manual Control</h3>";
+    html += "<label>Motor PWM (0-800): </label>";
+    html += "<input type=\"range\" id=\"pwm\" min=\"0\" max=\"800\" value=\"0\">";
+    html += "<span id=\"pwmValue\">0</span><br><br>";
+    html += "<label>Servo Angle (0-180): </label>";
+    html += "<input type=\"range\" id=\"angle\" min=\"0\" max=\"180\" value=\"90\">";
+    html += "<span id=\"angleValue\">90</span><br><br>";
+    html += "<button class=\"manual\" onclick=\"sendManualControl()\">Send Command</button>";
+    html += "</div>";
+    html += "</div>";
+    html += "<script>";
+    html += "document.getElementById('pwm').oninput = function() {";
+    html += "    document.getElementById('pwmValue').innerHTML = this.value;";
+    html += "};";
+    html += "document.getElementById('angle').oninput = function() {";
+    html += "    document.getElementById('angleValue').innerHTML = this.value;";
+    html += "};";
+    html += "</script>";
+    html += "</body></html>";
     
     server.send(200, "text/html", html);
 }
