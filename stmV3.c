@@ -140,39 +140,53 @@ void HC_SR04_StartMeasurement(void) {
 
 // Fungsi untuk membaca pulse duration dari HC-SR04
 uint32_t HC_SR04_GetPulseDuration(void) {
-  uint32_t timeout = 100000; // Timeout counter
-  uint32_t start_time, end_time;
+    uint32_t timeout = 1000000; // Increased timeout
+    uint32_t start_time = 0, end_time = 0;
 
-  // Tunggu sampai Echo pin LOW (pastikan keadaan awal)
-  while (HAL_GPIO_ReadPin(HC_SR04_ECHO_GPIO_Port, HC_SR04_ECHO_Pin) == GPIO_PIN_SET) {
-    if (timeout-- == 0) return 0;
-  }
+    // Wait for ECHO to be LOW (ensure clean start)
+    timeout = 100000;
+    while (HAL_GPIO_ReadPin(HC_SR04_ECHO_GPIO_Port, HC_SR04_ECHO_Pin) == GPIO_PIN_SET) {
+        if (timeout-- == 0) {
+            printf("Timeout: ECHO stuck HIGH\r\n");
+            return 0;
+        }
+    }
 
-  // Tunggu rising edge (Echo pin menjadi HIGH)
-  timeout = 100000;
-  while (HAL_GPIO_ReadPin(HC_SR04_ECHO_GPIO_Port, HC_SR04_ECHO_Pin) == GPIO_PIN_RESET) {
-    if (timeout-- == 0) return 0;
-  }
+    // Wait for rising edge (start of pulse)
+    timeout = 100000;
+    while (HAL_GPIO_ReadPin(HC_SR04_ECHO_GPIO_Port, HC_SR04_ECHO_Pin) == GPIO_PIN_RESET) {
+        if (timeout-- == 0) {
+            printf("Timeout: No rising edge\r\n");
+            return 0;
+        }
+    }
+    start_time = Get_Micros();
 
-  // Catat waktu mulai
-  start_time = Get_Micros();
+    // Wait for falling edge (end of pulse)
+    timeout = 100000;
+    while (HAL_GPIO_ReadPin(HC_SR04_ECHO_GPIO_Port, HC_SR04_ECHO_Pin) == GPIO_PIN_SET) {
+        if (timeout-- == 0) {
+            printf("Timeout: No falling edge\r\n");
+            return 0;
+        }
+    }
+    end_time = Get_Micros();
 
-  // Tunggu falling edge (Echo pin menjadi LOW)
-  timeout = 100000;
-  while (HAL_GPIO_ReadPin(HC_SR04_ECHO_GPIO_Port, HC_SR04_ECHO_Pin) == GPIO_PIN_SET) {
-    if (timeout-- == 0) return 0;
-  }
+    // Calculate duration (handle timer overflow)
+    uint32_t pulse_duration;
+    if (end_time >= start_time) {
+        pulse_duration = end_time - start_time;
+    } else {
+        pulse_duration = (0xFFFF - start_time) + end_time;
+    }
 
-  // Catat waktu selesai
-  end_time = Get_Micros();
+    // Validate pulse duration (58us to 38ms for 1cm to 6.5m)
+    if (pulse_duration < 58 || pulse_duration > 38000) {
+        printf("Invalid pulse: %lu us\r\n", pulse_duration);
+        return 0;
+    }
 
-  // Hitung durasi pulse
-  if (end_time >= start_time) {
-    return (end_time - start_time);
-  } else {
-    // Handle timer overflow
-    return (0xFFFF - start_time) + end_time;
-  }
+    return pulse_duration;
 }
 
 // Fungsi untuk mendapatkan jarak dalam cm
