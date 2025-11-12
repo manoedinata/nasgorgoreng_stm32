@@ -112,10 +112,13 @@ uint32_t Get_Micros(void);
 
 // Fungsi untuk delay mikrosecond menggunakan TIM3
 void HC_SR04_Delay_us(uint16_t us) {
-  __HAL_TIM_SET_COUNTER(&htim3, 0);
-  HAL_TIM_Base_Start(&htim3);
-  while (__HAL_TIM_GET_COUNTER(&htim3) < us);
-  HAL_TIM_Base_Stop(&htim3);
+  // Catat waktu 'mulai' saat ini dari timer yang sedang berjalan
+  uint32_t start_time = __HAL_TIM_GET_COUNTER(&htim3);
+
+  // Tunggu dalam loop sampai selisih waktunya >= us
+  // Pengurangan unsigned int (uint32_t) akan secara otomatis
+  // menangani overflow timer dengan benar
+  while ((__HAL_TIM_GET_COUNTER(&htim3) - start_time) < us);
 }
 
 // Fungsi untuk mendapatkan waktu dalam mikrosecond
