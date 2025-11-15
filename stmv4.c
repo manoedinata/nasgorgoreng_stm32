@@ -279,9 +279,10 @@ void ParseUARTCommand(void) {
 
 // Kirim data jarak ke ESP32
 void SendDistanceData(void) {
-  char buffer[32];
-  int len = sprintf(buffer, "DIST:%.2f\r\n", distance_cm);
-  HAL_UART_Transmit(&huart2, (uint8_t*)buffer, len, 100);
+//  char buffer[32];
+//  int len = sprintf(buffer, "DIST:%.2f\r\n", distance_cm);
+//  HAL_UART_Transmit(&huart2, (uint8_t*)buffer, len, 100);
+	printf("DIST:%.2f\r\n", distance_cm);
 }
 
 // UART Receive Complete Callback
