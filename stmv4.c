@@ -84,8 +84,8 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
-static void MX_TIM3_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 // HC-SR04 Functions
 void HC_SR04_StartMeasurement(void);
@@ -145,7 +145,7 @@ uint32_t HC_SR04_GetPulseDuration(void) {
     timeout = 100000;
     while (HAL_GPIO_ReadPin(HC_SR04_ECHO_GPIO_Port, HC_SR04_ECHO_Pin) == GPIO_PIN_SET) {
         if (timeout-- == 0) {
-            printf("Timeout: ECHO stuck HIGH\r\n");
+//            printf("Timeout: ECHO stuck HIGH\r\n");
             return 0;
         }
     }
@@ -154,7 +154,7 @@ uint32_t HC_SR04_GetPulseDuration(void) {
     timeout = 100000;
     while (HAL_GPIO_ReadPin(HC_SR04_ECHO_GPIO_Port, HC_SR04_ECHO_Pin) == GPIO_PIN_RESET) {
         if (timeout-- == 0) {
-            printf("Timeout: No rising edge\r\n");
+//            printf("Timeout: No rising edge\r\n");
             return 0;
         }
     }
@@ -164,7 +164,7 @@ uint32_t HC_SR04_GetPulseDuration(void) {
     timeout = 100000;
     while (HAL_GPIO_ReadPin(HC_SR04_ECHO_GPIO_Port, HC_SR04_ECHO_Pin) == GPIO_PIN_SET) {
         if (timeout-- == 0) {
-            printf("Timeout: No falling edge\r\n");
+//            printf("Timeout: No falling edge\r\n");
             return 0;
         }
     }
@@ -180,7 +180,7 @@ uint32_t HC_SR04_GetPulseDuration(void) {
 
     // Validate pulse duration (58us to 38ms for 1cm to 6.5m)
     if (pulse_duration < 58 || pulse_duration > 38000) {
-        printf("Invalid pulse: %lu us\r\n", pulse_duration);
+//        printf("Invalid pulse: %lu us\r\n", pulse_duration);
         return 0;
     }
 
@@ -343,8 +343,8 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM1_Init();
   MX_TIM2_Init();
-  MX_TIM3_Init();
   MX_USART2_UART_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
   // Start PWM untuk servo
@@ -373,9 +373,9 @@ int main(void)
   // Start UART receive interrupt
   HAL_UART_Receive_IT(&huart2, (uint8_t*)uart_rx_buffer, 1);
 
-  printf("STM32 Line Follower Slave Ready\r\n");
-  printf("HC-SR04 Initialized with TIM3 measurement\r\n");
-  printf("PWM Servo and Motor Ready\r\n");
+//  printf("STM32 Line Follower Slave Ready\r\n");
+//  printf("HC-SR04 Initialized with TIM3 measurement\r\n");
+//  printf("PWM Servo and Motor Ready\r\n");
 
   /* USER CODE END 2 */
 
@@ -458,6 +458,7 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 0 */
 
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
   TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
@@ -472,6 +473,15 @@ static void MX_TIM1_Init(void)
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
   if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
   {
     Error_Handler();
@@ -527,6 +537,7 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 0 */
 
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
 
@@ -539,6 +550,15 @@ static void MX_TIM2_Init(void)
   htim2.Init.Period = 999;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
   if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
   {
     Error_Handler();
@@ -682,7 +702,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
-
+  // Initialize both direction pins to LOW (stop)
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_RESET);
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
@@ -720,4 +742,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
