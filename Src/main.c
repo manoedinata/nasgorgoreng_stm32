@@ -266,13 +266,12 @@ void ParseUARTCommand(void) {
     }
     else if (strncmp(token, "M:", 2) == 0) {
       control_data.motor_pwm = atoi(token + 2);
+      SetMotorSpeed(control_data.motor_pwm);
     }
 
     token = strtok(NULL, ",");
   }
 
-  // Update motor control
-  SetMotorSpeed(control_data.motor_pwm);
 }
 
 // Kirim data jarak ke ESP32
