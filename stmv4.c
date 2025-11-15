@@ -193,7 +193,8 @@ float HC_SR04_GetDistance(void) {
   uint32_t pulse_duration = HC_SR04_GetPulseDuration();
 
   if (pulse_duration == 0) {
-    return 0.0; // Timeout atau error
+//    return 0.0; // Timeout atau error
+	  return distance_cm; // return current distance if error
   }
 
   // Konversi ke cm (34000 cm/s, dibagi 2 untuk pulang-pergi)
@@ -201,7 +202,8 @@ float HC_SR04_GetDistance(void) {
 
   // Filter nilai valid (2cm - 400cm)
   if (distance > 400.0 || distance < 2.0) {
-    return 0.0;
+//    return 0.0;
+	  return distance;
   }
 
   return distance;
