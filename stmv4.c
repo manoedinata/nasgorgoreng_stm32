@@ -418,9 +418,9 @@ int main(void)
   }
 
   HAL_Delay(10); // Small delay to reduce CPU load
-  /* USER CODE END WHILE */
+    /* USER CODE END WHILE */
 
-  /* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
