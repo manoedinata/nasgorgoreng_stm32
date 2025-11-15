@@ -31,7 +31,7 @@
 typedef struct {
   uint16_t steering_pwm;
   uint16_t sensor_servo_pwm;
-  uint16_t motor_pwm;
+  int16_t motor_pwm;
 } ControlData_t;
 /* USER CODE END PTD */
 
@@ -706,8 +706,8 @@ static void MX_GPIO_Init(void)
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
   // Initialize both direction pins to LOW (stop)
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, MOTOR_IN1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, MOTOR_IN2_Pin, GPIO_PIN_RESET);
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
