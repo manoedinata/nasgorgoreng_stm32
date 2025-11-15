@@ -75,6 +75,9 @@ ControlData_t control_data;
 char uart_rx_buffer[UART_BUFFER_SIZE];
 uint8_t uart_rx_index = 0;
 
+// Flag to signal new command from UART
+volatile uint8_t g_uart_command_ready = 0;
+
 // Timing variables
 uint32_t last_distance_send = 0;
 /* USER CODE END PV */
@@ -290,21 +293,28 @@ void SendDistanceData(void) {
 // UART Receive Complete Callback
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   if (huart->Instance == USART2) {
+
+    // If we are already processing a command, ignore this byte
+    if (g_uart_command_ready == 1) {
+      HAL_UART_Receive_IT(&huart2, (uint8_t*)&uart_rx_buffer[uart_rx_index], 1);
+      return;
+    }
+
     if (uart_rx_buffer[uart_rx_index] == '\n') {
-      // Process complete message
       uart_rx_buffer[uart_rx_index] = '\0'; // Null terminate
-      ParseUARTCommand();
+      g_uart_command_ready = 1; // Set the flag!
       uart_rx_index = 0;
-      memset(uart_rx_buffer, 0, UART_BUFFER_SIZE);
     } else {
       uart_rx_index++;
       if (uart_rx_index >= UART_BUFFER_SIZE) {
-        uart_rx_index = 0; // Reset buffer jika overflow
+        uart_rx_index = 0; // Overflow
       }
     }
 
-    // Continue listening
-    HAL_UART_Receive_IT(&huart2, (uint8_t*)&uart_rx_buffer[uart_rx_index], 1);
+    // Re-arm the interrupt ONLY if we are not processing
+    if (g_uart_command_ready == 0) {
+        HAL_UART_Receive_IT(&huart2, (uint8_t*)&uart_rx_buffer[uart_rx_index], 1);
+    }
   }
 }
 
@@ -385,20 +395,32 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
-  {
-    // Baca jarak HC-SR04
-    distance_cm = HC_SR04_GetDistance();
+    {
+  // --- 1. Check for new UART command ---
+  if (g_uart_command_ready) {
+	g_uart_command_ready = 0; // Clear the flag immediately
 
-    // Kirim data jarak setiap 100ms
-    if (HAL_GetTick() - last_distance_send >= 100) {
-      SendDistanceData();
-      last_distance_send = HAL_GetTick();
-    }
+	ParseUARTCommand(); // Do the heavy work HERE
 
-    HAL_Delay(10); // Small delay untuk mengurangi CPU load
-    /* USER CODE END WHILE */
+	memset(uart_rx_buffer, 0, UART_BUFFER_SIZE); // Clear buffer
 
-    /* USER CODE BEGIN 3 */
+	// Re-arm interrupt to receive the next byte
+	HAL_UART_Receive_IT(&huart2, (uint8_t*)uart_rx_buffer, 1);
+  }
+
+  // --- 2. Baca jarak HC-SR04 ---
+  distance_cm = HC_SR04_GetDistance();
+
+  // --- 3. Kirim data jarak setiap 100ms ---
+  if (HAL_GetTick() - last_distance_send >= 100) {
+	SendDistanceData();
+	last_distance_send = HAL_GetTick();
+  }
+
+  HAL_Delay(10); // Small delay to reduce CPU load
+  /* USER CODE END WHILE */
+
+  /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
