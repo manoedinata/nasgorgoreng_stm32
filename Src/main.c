@@ -389,28 +389,28 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
     {
-  // --- 1. Check for new UART command ---
-  if (g_uart_command_ready) {
-	g_uart_command_ready = 0; // Clear the flag immediately
+      // --- 1. Check for new UART command ---
+      if (g_uart_command_ready) {
+        g_uart_command_ready = 0; // Clear the flag immediately
 
-	ParseUARTCommand(); // Do the heavy work HERE
+        ParseUARTCommand(); // Do the heavy work HERE
 
-	memset(uart_rx_buffer, 0, UART_BUFFER_SIZE); // Clear buffer
+        memset(uart_rx_buffer, 0, UART_BUFFER_SIZE); // Clear buffer
 
-	// Re-arm interrupt to receive the next byte
-	HAL_UART_Receive_IT(&huart2, (uint8_t*)uart_rx_buffer, 1);
-  }
+        // Re-arm interrupt to receive the next byte
+        HAL_UART_Receive_IT(&huart2, (uint8_t*)uart_rx_buffer, 1);
+      }
 
-  // --- 2. Baca jarak HC-SR04 ---
-  distance_cm = HC_SR04_GetDistance();
+      // --- 2. Baca jarak HC-SR04 ---
+      distance_cm = HC_SR04_GetDistance();
 
-  // --- 3. Kirim data jarak setiap 100ms ---
-  if (HAL_GetTick() - last_distance_send >= 100) {
-	SendDistanceData();
-	last_distance_send = HAL_GetTick();
-  }
+      // --- 3. Kirim data jarak setiap 100ms ---
+      if (HAL_GetTick() - last_distance_send >= 100) {
+        SendDistanceData();
+        last_distance_send = HAL_GetTick();
+      }
 
-  HAL_Delay(10); // Small delay to reduce CPU load
+      HAL_Delay(10); // Small delay to reduce CPU load
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
