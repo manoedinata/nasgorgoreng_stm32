@@ -269,6 +269,14 @@ void ParseUARTCommand(void) {
       SetMotorSpeed(control_data.motor_pwm);
     }
 
+    // Send acknowledgment
+    printf(
+      "ACK:S:%d,T:%d,M:%d\r\n",
+      control_data.steering_pwm,
+      control_data.sensor_servo_pwm,
+      control_data.motor_pwm
+    );
+
     token = strtok(NULL, ",");
   }
 
